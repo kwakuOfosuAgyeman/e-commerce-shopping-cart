@@ -11,20 +11,9 @@ class Category extends Model
 
     protected $fillable = [
         'name',
-        'slug',
         'description',
         'parent_id',
         'svg',
-        'is_active',
-        'sort_order',
-        'meta_title',
-        'meta_description',
-        'meta_keywords'
-    ];
-
-    protected $casts = [
-        'is_active' => 'boolean',
-        'sort_order' => 'integer',
     ];
 
     // Parent Category

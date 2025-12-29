@@ -27,8 +27,7 @@ class CheckoutService
         $cartItems = $cart ? $cart->items : collect();
 
         $subtotal = $cartItems->sum(function($item) {
-            $price = $item->product->sale_price ?? $item->product->price;
-            return $price * $item->quantity;
+            return $item->product->price * $item->quantity;
         });
 
         return [

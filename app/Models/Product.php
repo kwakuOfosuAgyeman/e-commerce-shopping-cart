@@ -14,18 +14,17 @@ class Product extends Model
         'name',
         'description',
         'price',
-        'sale_price',
         'sku',
         'status',
         'stock',
         'low_stock_threshold',
         'slug',
         'brand_id',
+        'currency',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
-        'sale_price' => 'decimal:2',
         'stock' => 'integer',
         'low_stock_threshold' => 'integer',
         'status' => ProductStatus::class,
@@ -53,7 +52,7 @@ class Product extends Model
 
     public function primaryImage()
     {
-        return $this->hasOne(ProductImage::class)->where('is_primary', true);
+        return $this->hasOne(ProductImage::class)->oldest();
     }
 
     public function cartItems()
@@ -102,11 +101,4 @@ class Product extends Model
         return $query->where('stock', '>', 0);
     }
 
-    /**
-     * Get the effective price (sale price if available, otherwise regular price).
-     */
-    public function getEffectivePriceAttribute(): float
-    {
-        return $this->sale_price ?? $this->price;
-    }
 }

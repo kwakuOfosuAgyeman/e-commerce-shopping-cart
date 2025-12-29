@@ -34,8 +34,7 @@ class CartItem extends Model
      */
     public function getTotalPriceAttribute(): float
     {
-        $price = $this->product->sale_price ?? $this->product->price;
-        return $this->quantity * $price;
+        return $this->quantity * $this->product->price;
     }
 
     /**

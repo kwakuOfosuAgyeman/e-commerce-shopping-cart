@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Enums\ProductStatus;
+use App\Mail\OrderConfirmation;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
@@ -13,6 +14,7 @@ use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 class OrderService
@@ -143,13 +145,12 @@ class OrderService
                     throw new \Exception("Insufficient stock for '{$product->name}'. Available: {$product->stock}");
                 }
 
-                $price = $product->sale_price ?? $product->price;
-                $subtotal += $price * $cartItem->quantity;
+                $subtotal += $product->price * $cartItem->quantity;
 
                 $itemsData[] = [
                     'product' => $product,
                     'quantity' => $cartItem->quantity,
-                    'price' => $price,
+                    'price' => $product->price,
                 ];
             }
 
@@ -193,10 +194,14 @@ class OrderService
 
             DB::commit();
 
+            // Send order confirmation email
+            $order->load(['items.product', 'payment', 'user']);
+            Mail::to($order->user->email)->queue(new OrderConfirmation($order));
+
             return [
                 'success' => true,
                 'message' => 'Order placed successfully',
-                'order' => $order->load(['items.product', 'payment']),
+                'order' => $order,
                 'order_id' => $order->id,
                 'order_number' => $order->order_number,
                 'code' => 201

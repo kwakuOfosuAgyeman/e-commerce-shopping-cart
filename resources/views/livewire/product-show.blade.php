@@ -16,14 +16,7 @@
             <div>
                 <h1 class="text-3xl font-bold">{{ $product->name }}</h1>
 
-                @if($product->sale_price)
-                    <div class="mt-4">
-                        <span class="text-2xl font-bold text-red-600">${{ number_format($product->sale_price, 2) }}</span>
-                        <span class="text-lg text-gray-400 line-through ml-2">${{ number_format($product->price, 2) }}</span>
-                    </div>
-                @else
-                    <p class="text-2xl font-bold mt-4">${{ number_format($product->price, 2) }}</p>
-                @endif
+                <p class="text-2xl font-bold mt-4">${{ number_format($product->price, 2) }}</p>
 
                 <p class="mt-4 text-gray-600">{{ $product->description }}</p>
 

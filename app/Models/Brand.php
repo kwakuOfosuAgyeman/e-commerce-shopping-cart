@@ -9,22 +9,9 @@ class Brand extends Model
 {
     use HasFactory;
 
-     /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<string>
-     */
     protected $fillable = [
         'name',
-        'slug',
         'description',
-        'logo',
-        'website',
-        'is_active'
-    ];
-
-    protected $casts = [
-        'is_active' => 'boolean',
     ];
 
     // Relationship with products

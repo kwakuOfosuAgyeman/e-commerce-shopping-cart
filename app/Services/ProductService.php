@@ -10,13 +10,12 @@ use Illuminate\Support\Facades\Cache;
 class ProductService
 {
     /**
-     * Get featured products for homepage (products with sale prices)
+     * Get featured products for homepage
      */
     public function getTopDeals()
     {
         return Product::with(['brand:id,name', 'categories:id,name'])
             ->where('status', ProductStatus::ACTIVE)
-            ->whereNotNull('sale_price')
             ->where('stock', '>', 0)
             ->orderBy('created_at', 'desc')
             ->limit(10)
@@ -88,10 +87,10 @@ class ProductService
 
         // Filter by price range
         if (!empty($validated['min_price'])) {
-            $productsQuery->whereRaw('COALESCE(sale_price, price) >= ?', [$validated['min_price']]);
+            $productsQuery->where('price', '>=', $validated['min_price']);
         }
         if (!empty($validated['max_price'])) {
-            $productsQuery->whereRaw('COALESCE(sale_price, price) <= ?', [$validated['max_price']]);
+            $productsQuery->where('price', '<=', $validated['max_price']);
         }
 
         // Filter by stock
@@ -102,10 +101,10 @@ class ProductService
         // Sorting
         switch ($sortBy) {
             case 'price_asc':
-                $productsQuery->orderByRaw('COALESCE(sale_price, price) ASC');
+                $productsQuery->orderBy('price', 'asc');
                 break;
             case 'price_desc':
-                $productsQuery->orderByRaw('COALESCE(sale_price, price) DESC');
+                $productsQuery->orderBy('price', 'desc');
                 break;
             case 'newest':
             default:
@@ -154,8 +153,7 @@ class ProductService
         $section = $request->get('section', 'all');
         switch ($section) {
             case 'top-deals':
-                $query->whereNotNull('sale_price')
-                    ->where('stock', '>', 0);
+                $query->where('stock', '>', 0);
                 break;
             case 'new-arrivals':
                 $query->where('created_at', '>=', now()->subDays(30))
@@ -178,10 +176,10 @@ class ProductService
 
         // Filter by price
         if ($request->has('min_price')) {
-            $query->whereRaw('COALESCE(sale_price, price) >= ?', [$request->get('min_price')]);
+            $query->where('price', '>=', $request->get('min_price'));
         }
         if ($request->has('max_price')) {
-            $query->whereRaw('COALESCE(sale_price, price) <= ?', [$request->get('max_price')]);
+            $query->where('price', '<=', $request->get('max_price'));
         }
 
         // In stock filter
@@ -193,10 +191,10 @@ class ProductService
         $sortBy = $request->get('sort', 'newest');
         switch ($sortBy) {
             case 'price_asc':
-                $query->orderByRaw('COALESCE(sale_price, price) ASC');
+                $query->orderBy('price', 'asc');
                 break;
             case 'price_desc':
-                $query->orderByRaw('COALESCE(sale_price, price) DESC');
+                $query->orderBy('price', 'desc');
                 break;
             case 'name':
                 $query->orderBy('name', 'asc');
