@@ -5,9 +5,11 @@ use App\Livewire\ProductList;
 use App\Livewire\ProductShow;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\CartController;
 
-Route::view('/', 'welcome');
+// Home page with featured products and deals
+Route::get('/', [CustomerController::class, 'index'])->name('home');
 
 // Product routes (Livewire)
 Route::get('/products', ProductList::class)->name('products.index');
@@ -29,6 +31,14 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/my-orders', [CustomerController::class, 'orders'])->name('user.orders');
     Route::get('/order/track/{id}', [CustomerController::class, 'trackOrder'])->name('order.track');
     Route::put('/order/cancel/{id}', [CustomerController::class, 'cancelOrder'])->name('order.cancel');
+});
+
+// User profile routes (authenticated)
+Route::middleware(['auth'])->group(function () {
+    // Dashboard redirects to user profile (for post-login redirect compatibility)
+    Route::get('/dashboard', [UserController::class, 'index'])->name('dashboard');
+    // Profile editing page
+    Route::view('/profile', 'profile')->name('profile');
 });
 
 require __DIR__.'/auth.php';

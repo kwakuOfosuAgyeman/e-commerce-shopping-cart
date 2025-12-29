@@ -27,7 +27,7 @@ class ProductService
      */
     public function getTopElectronics()
     {
-        $electronicsCategory = Category::where('slug', 'electronics')->first();
+        $electronicsCategory = Category::where('name', 'Electronics')->first();
 
         return Product::with(['brand:id,name'])
             ->where('status', ProductStatus::ACTIVE)
@@ -161,11 +161,11 @@ class ProductService
                 break;
         }
 
-        // Filter by category
+        // Filter by category (accepts category ID)
         if ($request->has('category') && !empty($request->get('category'))) {
-            $categorySlug = $request->get('category');
-            $query->whereHas('categories', function($q) use ($categorySlug) {
-                $q->where('slug', $categorySlug);
+            $categoryId = $request->get('category');
+            $query->whereHas('categories', function($q) use ($categoryId) {
+                $q->where('categories.id', $categoryId);
             });
         }
 
@@ -213,7 +213,7 @@ class ProductService
      */
     public function getProductBySlug($slug)
     {
-        return Product::with(['brand:id,name', 'categories:id,name,slug'])
+        return Product::with(['brand:id,name', 'categories:id,name'])
             ->where('slug', $slug)
             ->where('status', ProductStatus::ACTIVE)
             ->firstOrFail();

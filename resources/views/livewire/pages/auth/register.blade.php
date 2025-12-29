@@ -14,6 +14,25 @@ new #[Layout('layouts.guest')] class extends Component
     public string $email = '';
     public string $password = '';
     public string $password_confirmation = '';
+    public ?string $redirectTo = null;
+
+    /**
+     * Initialize component with redirect URL from query string.
+     */
+    public function mount(): void
+    {
+        // Store the intended redirect URL from query parameter or previous URL
+        $this->redirectTo = request()->query('redirect', url()->previous());
+
+        // Don't redirect back to auth pages
+        if ($this->redirectTo && (
+            str_contains($this->redirectTo, '/login') ||
+            str_contains($this->redirectTo, '/register') ||
+            str_contains($this->redirectTo, '/forgot-password')
+        )) {
+            $this->redirectTo = null;
+        }
+    }
 
     /**
      * Handle an incoming registration request.
@@ -32,7 +51,9 @@ new #[Layout('layouts.guest')] class extends Component
 
         Auth::login($user);
 
-        $this->redirect(route('dashboard', absolute: false), navigate: true);
+        // Redirect to stored redirect URL or dashboard
+        $destination = $this->redirectTo ?: route('dashboard', absolute: false);
+        $this->redirect($destination, navigate: true);
     }
 }; ?>
 

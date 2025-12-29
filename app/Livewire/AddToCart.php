@@ -79,6 +79,40 @@ class AddToCart extends Component
         $this->dispatch('cart-updated');
     }
 
+    public function buyNow(): void
+    {
+        if (!Auth::check()) {
+            $this->redirect(route('login'));
+            return;
+        }
+
+        if (!$this->product->isInStock()) {
+            session()->flash('error', 'Product is out of stock.');
+            return;
+        }
+
+        if ($this->quantity > $this->product->stock) {
+            session()->flash('error', 'Not enough stock available.');
+            return;
+        }
+
+        // Get or create cart for user
+        $cart = Cart::firstOrCreate(['user_id' => Auth::id()]);
+
+        // Clear existing cart items for buy now
+        $cart->items()->delete();
+
+        // Add product to cart
+        CartItem::create([
+            'cart_id' => $cart->id,
+            'product_id' => $this->product->id,
+            'quantity' => $this->quantity,
+        ]);
+
+        $this->dispatch('cart-updated');
+        $this->redirect(route('checkout'));
+    }
+
     public function render()
     {
         return view('livewire.add-to-cart');

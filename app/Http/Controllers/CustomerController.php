@@ -28,8 +28,7 @@ class CustomerController extends Controller
         $topDeals = $this->productService->getTopDeals();
         $topElectronics = $this->productService->getTopElectronics();
 
-        $categories = Category::where('is_active', true)
-            ->whereNull('parent_id')
+        $categories = Category::whereNull('parent_id')
             ->orderBy('name')
             ->get();
 
@@ -64,13 +63,11 @@ class CustomerController extends Controller
     {
         $products = $this->productService->getProductsWithFilters($request);
 
-        $categories = Category::where('is_active', true)
-            ->whereNull('parent_id')
+        $categories = Category::whereNull('parent_id')
             ->orderBy('name')
             ->get();
 
-        $brands = Brand::where('is_active', true)
-            ->orderBy('name')
+        $brands = Brand::orderBy('name')
             ->get();
 
         $section = $request->get('section', 'all');

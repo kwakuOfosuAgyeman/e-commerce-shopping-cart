@@ -18,7 +18,7 @@ class ProductList extends Component
 
     protected $queryString = [
         'search' => ['except' => ''],
-        'categoryId' => ['except' => null],
+        'categoryId' => ['except' => null, 'as' => 'category'],
         'sortBy' => ['except' => 'created_at'],
         'sortDirection' => ['except' => 'desc'],
     ];
@@ -43,6 +43,13 @@ class ProductList extends Component
         }
     }
 
+    public function clearFilters(): void
+    {
+        $this->search = '';
+        $this->categoryId = null;
+        $this->resetPage();
+    }
+
     public function render()
     {
         $products = Product::query()
@@ -62,7 +69,7 @@ class ProductList extends Component
             ->orderBy($this->sortBy, $this->sortDirection)
             ->paginate(12);
 
-        $categories = Category::where('is_active', true)->get();
+        $categories = Category::whereNull('parent_id')->get();
 
         return view('livewire.product-list', [
             'products' => $products,

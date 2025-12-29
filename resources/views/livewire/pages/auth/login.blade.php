@@ -8,6 +8,25 @@ use Livewire\Volt\Component;
 new #[Layout('layouts.guest')] class extends Component
 {
     public LoginForm $form;
+    public ?string $redirectTo = null;
+
+    /**
+     * Initialize component with redirect URL from query string.
+     */
+    public function mount(): void
+    {
+        // Store the intended redirect URL from query parameter or previous URL
+        $this->redirectTo = request()->query('redirect', url()->previous());
+
+        // Don't redirect back to auth pages
+        if ($this->redirectTo && (
+            str_contains($this->redirectTo, '/login') ||
+            str_contains($this->redirectTo, '/register') ||
+            str_contains($this->redirectTo, '/forgot-password')
+        )) {
+            $this->redirectTo = null;
+        }
+    }
 
     /**
      * Handle an incoming authentication request.
@@ -20,7 +39,9 @@ new #[Layout('layouts.guest')] class extends Component
 
         Session::regenerate();
 
-        $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);
+        // Redirect to intended URL, stored redirect, or dashboard
+        $default = $this->redirectTo ?: route('dashboard', absolute: false);
+        $this->redirectIntended(default: $default, navigate: true);
     }
 }; ?>
 
