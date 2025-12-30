@@ -7,7 +7,7 @@
             </svg>
             <div>
                 <p class="text-sm font-medium text-green-800">{{ session('success') }}</p>
-                <a href="{{ route('cart.index') }}" wire:navigate class="text-sm text-green-600 hover:text-green-700 underline">View Cart</a>
+                <a href="{{ route('cart') }}" wire:navigate class="text-sm text-green-600 hover:text-green-700 underline">View Cart</a>
             </div>
         </div>
     @endif

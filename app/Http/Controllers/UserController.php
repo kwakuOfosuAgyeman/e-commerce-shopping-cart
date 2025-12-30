@@ -12,12 +12,6 @@ use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth')->except(['register']);
-        $this->middleware('throttle:10,1')->only(['register', 'updateProfile']);
-    }
-
     // Register a new user
     public function register(RegisterUserRequest $request)
     {
@@ -42,7 +36,7 @@ class UserController extends Controller
     // Retrieve current user's profile
     public function index()
     {
-        $user = Auth::user()->load(['role', 'orders']);
+        $user = Auth::user()->load(['orders']);
 
         // Calculate user statistics
         $totalSpent = $user->orders()->sum('total_amount') ?? 0;
