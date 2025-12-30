@@ -9,6 +9,35 @@ use Livewire\Component;
 
 class Cart extends Component
 {
+    public bool $showDeleteModal = false;
+    public bool $showClearModal = false;
+    public ?int $itemToDelete = null;
+    public ?string $itemName = null;
+
+    public function confirmDelete(int $cartItemId, string $productName): void
+    {
+        $this->itemToDelete = $cartItemId;
+        $this->itemName = $productName;
+        $this->showDeleteModal = true;
+    }
+
+    public function confirmClear(): void
+    {
+        $this->showClearModal = true;
+    }
+
+    public function cancelDelete(): void
+    {
+        $this->showDeleteModal = false;
+        $this->itemToDelete = null;
+        $this->itemName = null;
+    }
+
+    public function cancelClear(): void
+    {
+        $this->showClearModal = false;
+    }
+
     public function updateQuantity(int $cartItemId, int $quantity): void
     {
         $cartItem = CartItem::whereHas('cart', function ($query) {
@@ -57,11 +86,19 @@ class Cart extends Component
         }
     }
 
-    public function removeItem(int $cartItemId): void
+    public function removeItem(?int $cartItemId = null): void
     {
+        $id = $cartItemId ?? $this->itemToDelete;
+
+        if (!$id) return;
+
         CartItem::whereHas('cart', function ($query) {
             $query->where('user_id', Auth::id());
-        })->where('id', $cartItemId)->delete();
+        })->where('id', $id)->delete();
+
+        $this->showDeleteModal = false;
+        $this->itemToDelete = null;
+        $this->itemName = null;
 
         session()->flash('success', 'Item removed from cart.');
         $this->dispatch('cart-updated');
@@ -74,6 +111,8 @@ class Cart extends Component
         if ($cart) {
             $cart->items()->delete();
         }
+
+        $this->showClearModal = false;
 
         session()->flash('success', 'Cart cleared.');
         $this->dispatch('cart-updated');

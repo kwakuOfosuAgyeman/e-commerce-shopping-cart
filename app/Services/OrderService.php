@@ -5,7 +5,8 @@ namespace App\Services;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Enums\ProductStatus;
-use App\Mail\OrderConfirmation;
+use App\Jobs\SendOrderCancelledEmail;
+use App\Jobs\SendOrderConfirmationEmail;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
@@ -14,7 +15,6 @@ use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 class OrderService
@@ -80,6 +80,10 @@ class OrderService
             }
 
             DB::commit();
+
+            // Send cancellation email
+            $order->load(['items.product', 'user']);
+            SendOrderCancelledEmail::dispatch($order);
 
             return ['success' => true, 'message' => 'Order cancelled successfully', 'order' => $order];
 
@@ -194,9 +198,9 @@ class OrderService
 
             DB::commit();
 
-            // Send order confirmation email
+            // Send order confirmation email (with status guard)
             $order->load(['items.product', 'payment', 'user']);
-            Mail::to($order->user->email)->queue(new OrderConfirmation($order));
+            SendOrderConfirmationEmail::dispatch($order, OrderStatus::PENDING);
 
             return [
                 'success' => true,

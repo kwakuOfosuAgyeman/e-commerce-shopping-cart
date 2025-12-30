@@ -1,59 +1,221 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# E-Commerce Shopping Cart
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A modern, full-featured e-commerce platform built with Laravel 12, Livewire 3, and Tailwind CSS.
 
-## About Laravel
+## Features
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+### Customer Features
+- **Product Browsing** - Browse products with filtering by category, brand, price range
+- **Product Search** - Real-time search with caching for performance
+- **Shopping Cart** - Add/remove items, update quantities with stock validation
+- **Checkout Flow** - Streamlined checkout with order confirmation emails
+- **Order Management** - View order history, track orders, cancel pending orders
+- **User Authentication** - Registration, login, email verification
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### Technical Highlights
+- **Service Layer Architecture** - Clean separation of business logic
+- **Livewire Components** - Real-time UI updates without page reloads
+- **Database Transactions** - Atomic operations with rollback on failure
+- **Pessimistic Locking** - Race condition prevention for stock management
+- **Queued Jobs** - Background processing for emails and reports
+- **Model Observers** - Automated low-stock notifications
+- **Enum-Based States** - Type-safe order/payment status management
+- **Security Headers** - CSP, HSTS, XSS protection middleware
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Requirements
 
-## Learning Laravel
+- PHP 8.2+
+- Composer 2.x
+- Node.js 18+ & NPM
+- SQLite (default) or MySQL/PostgreSQL
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## Installation
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### 1. Clone the Repository
 
-## Laravel Sponsors
+```bash
+git clone https://github.com/kwakuOfosuAgyeman/e-commerce-shopping-cart
+cd e-commerce-shopping-cart
+```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### 2. Install Dependencies
 
-### Premium Partners
+```bash
+composer install
+npm install
+```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### 3. Environment Setup
 
-## Contributing
+```bash
+cp .env.example .env
+php artisan key:generate
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### 4. Database Setup
 
-## Code of Conduct
+**Option A: SQLite (Default)**
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```bash
+touch database/database.sqlite
+php artisan migrate
+```
 
-## Security Vulnerabilities
+**Option B: MySQL/PostgreSQL**
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Update `.env` with your database credentials:
 
-## License
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=ecommerce
+DB_USERNAME=root
+DB_PASSWORD=your_password
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Then run migrations:
+
+```bash
+php artisan migrate
+```
+
+### 5. Seed Demo Data
+
+```bash
+php artisan db:seed
+```
+
+This creates:
+| User | Email | Password | Role |
+|------|-------|----------|------|
+| Admin User | admin@example.com | password | Admin |
+| Test User | test@example.com | password | Customer |
+
+### 6. Build Frontend Assets
+
+```bash
+npm run build
+```
+
+### 7. Start the Application
+
+**Quick Start (All Services):**
+
+```bash
+composer dev
+```
+
+This starts concurrently:
+- Laravel development server (http://localhost:8000)
+- Queue worker for background jobs
+- Log viewer (Laravel Pail)
+- Vite dev server for hot reloading
+
+**Or Start Services Individually:**
+
+```bash
+# Terminal 1: Laravel server
+php artisan serve
+
+# Terminal 2: Queue worker (for emails)
+php artisan queue:work
+
+# Terminal 3: Vite (for asset hot-reloading in development)
+npm run dev
+```
+
+
+## Configuration
+
+### Email (Required for Order Confirmations)
+
+For development, emails are logged to `storage/logs/laravel.log` by default.
+
+Configure SMTP in `.env`:
+
+```env
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.mailgun.org
+MAIL_PORT=587
+MAIL_USERNAME=your_username
+MAIL_PASSWORD=your_password
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS=orders@yourstore.com
+MAIL_FROM_NAME="Your Store"
+```
+
+### Queue Worker (Required for Background Jobs)
+
+The application uses database queues. Ensure the queue worker is running:
+
+```bash
+php artisan queue:work
+```
+
+## Security Features
+
+| Feature | Implementation |
+|---------|----------------|
+| Password Policy | Min 8 chars, mixed case, numbers, symbols, breach check |
+| CSRF Protection | Laravel default on all forms |
+| XSS Prevention | Blade escaping + CSP headers |
+| SQL Injection | Eloquent ORM + prepared statements |
+| Clickjacking | X-Frame-Options: DENY |
+| HTTPS Enforcement | ForceHttps middleware in production |
+| Rate Limiting | Throttle middleware on sensitive routes |
+| Input Validation | Dedicated Request classes with sanitization |
+
+## API Endpoints
+
+### Public
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/` | Homepage with featured products |
+| GET | `/products` | Product listing with filters |
+| GET | `/products/{slug}` | Product detail page |
+| GET | `/search/products` | Search API (throttled: 60/min) |
+
+### Authenticated
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/cart` | View shopping cart |
+| GET | `/checkout` | Checkout page |
+| POST | `/order/place` | Place order |
+| GET | `/my-orders` | Order history |
+| GET | `/order/track/{id}` | Track specific order |
+| PUT | `/order/cancel/{id}` | Cancel order |
+
+## Testing
+
+```bash
+# Run all tests
+php artisan test
+
+# Or with composer
+composer test
+```
+
+## Common Issues
+
+### "Class not found" errors
+```bash
+composer dump-autoload
+```
+
+### Queue jobs not processing
+Ensure queue worker is running:
+```bash
+php artisan queue:work
+```
+
+### Styles not loading
+Rebuild assets:
+```bash
+npm run build
+```
+
+### Database errors after pulling changes
+```bash
+php artisan migrate:fresh --seed
+```

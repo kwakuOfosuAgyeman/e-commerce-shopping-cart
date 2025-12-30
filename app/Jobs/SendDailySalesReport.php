@@ -9,23 +9,44 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Throwable;
 
 class SendDailySalesReport implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, SerializesModels;
 
     /**
      * The number of times the job may be attempted.
      */
-    public int $tries = 3;
+    public int $tries = 5;
 
     /**
-     * The number of seconds to wait before retrying the job.
+     * The maximum number of unhandled exceptions to allow before failing.
      */
-    public int $backoff = 60;
+    public int $maxExceptions = 3;
+
+    /**
+     * Indicate if the job should be marked as failed on timeout.
+     */
+    public bool $failOnTimeout = true;
+
+    /**
+     * The number of seconds the job can run before timing out.
+     */
+    public int $timeout = 120;
+
+    /**
+     * Calculate the number of seconds to wait before retrying the job.
+     * Uses exponential backoff: 30s, 60s, 120s, 300s, 600s
+     */
+    public function backoff(): array
+    {
+        return [30, 60, 120, 300, 600];
+    }
 
     /**
      * The date for the report.
@@ -38,6 +59,14 @@ class SendDailySalesReport implements ShouldQueue
     public function __construct(?Carbon $reportDate = null)
     {
         $this->reportDate = $reportDate ?? Carbon::today();
+    }
+
+    /**
+     * Determine the time at which the job should timeout.
+     */
+    public function retryUntil(): \DateTime
+    {
+        return now()->addHours(6);
     }
 
     /**
@@ -54,15 +83,35 @@ class SendDailySalesReport implements ShouldQueue
 
         $reportData = $this->generateReportData();
 
+        $sentCount = 0;
+        $failedCount = 0;
+
         foreach ($adminUsers as $admin) {
-            Mail::to($admin->email)->send(new DailySalesReport($reportData, $this->reportDate));
+            try {
+                Mail::to($admin->email)->send(new DailySalesReport($reportData, $this->reportDate));
+                $sentCount++;
+            } catch (Throwable $e) {
+                $failedCount++;
+                Log::warning('Failed to send daily sales report to admin', [
+                    'admin_id' => $admin->id,
+                    'admin_email' => $admin->email,
+                    'date' => $this->reportDate->toDateString(),
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        // If all emails failed, throw exception to trigger retry
+        if ($sentCount === 0 && $failedCount > 0) {
+            throw new \Exception("Failed to send daily sales report to any admin");
         }
 
         Log::info('Daily sales report sent', [
             'date' => $this->reportDate->toDateString(),
             'total_orders' => $reportData['total_orders'],
             'total_revenue' => $reportData['total_revenue'],
-            'admin_count' => $adminUsers->count(),
+            'sent_count' => $sentCount,
+            'failed_count' => $failedCount,
         ]);
     }
 
@@ -118,11 +167,12 @@ class SendDailySalesReport implements ShouldQueue
     /**
      * Handle a job failure.
      */
-    public function failed(\Throwable $exception): void
+    public function failed(?Throwable $exception): void
     {
-        Log::error('Failed to send daily sales report', [
+        Log::error('Failed to send daily sales report after all retries', [
             'date' => $this->reportDate->toDateString(),
-            'error' => $exception->getMessage(),
+            'error' => $exception?->getMessage(),
+            'attempts' => $this->attempts(),
         ]);
     }
 }

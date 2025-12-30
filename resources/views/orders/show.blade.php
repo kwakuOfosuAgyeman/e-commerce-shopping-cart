@@ -1,5 +1,5 @@
 <x-layouts.app>
-    <div class="min-h-screen bg-gray-50">
+    <div class="min-h-screen bg-gray-50" x-data="{ showCancelModal: false }">
         <!-- Page Header -->
         <div class="bg-gradient-to-r from-indigo-600 to-purple-600 py-12">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -261,18 +261,91 @@
                                 <p class="text-sm text-gray-600 mb-4">
                                     You can cancel this order while it's still being processed. This action cannot be undone.
                                 </p>
-                                <form action="{{ route('order.cancel', $order->id) }}" method="POST"
-                                      onsubmit="return confirm('Are you sure you want to cancel this order? This action cannot be undone.')">
-                                    @csrf
-                                    @method('PUT')
-                                    <button type="submit"
-                                            class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-xl transition-colors flex items-center justify-center gap-2">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                        </svg>
-                                        Cancel Order
-                                    </button>
-                                </form>
+                                <button type="button"
+                                        @click="showCancelModal = true"
+                                        class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-xl transition-colors flex items-center justify-center gap-2">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                    Cancel Order
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Cancel Order Modal -->
+                        <div x-show="showCancelModal"
+                             x-cloak
+                             class="fixed inset-0 z-50 overflow-y-auto"
+                             aria-labelledby="modal-title"
+                             role="dialog"
+                             aria-modal="true">
+                            <!-- Backdrop -->
+                            <div x-show="showCancelModal"
+                                 x-transition:enter="ease-out duration-300"
+                                 x-transition:enter-start="opacity-0"
+                                 x-transition:enter-end="opacity-100"
+                                 x-transition:leave="ease-in duration-200"
+                                 x-transition:leave-start="opacity-100"
+                                 x-transition:leave-end="opacity-0"
+                                 class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity"
+                                 @click="showCancelModal = false"></div>
+
+                            <!-- Modal Panel -->
+                            <div class="flex min-h-full items-center justify-center p-4">
+                                <div x-show="showCancelModal"
+                                     x-transition:enter="ease-out duration-300"
+                                     x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                                     x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                                     x-transition:leave="ease-in duration-200"
+                                     x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                                     x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                                     @click.away="showCancelModal = false"
+                                     class="relative transform overflow-hidden rounded-2xl bg-white shadow-2xl transition-all w-full max-w-md">
+                                    <!-- Icon -->
+                                    <div class="pt-8 pb-4 px-6 text-center">
+                                        <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
+                                            <svg class="h-8 w-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                                            </svg>
+                                        </div>
+                                    </div>
+
+                                    <!-- Content -->
+                                    <div class="px-6 pb-6 text-center">
+                                        <h3 class="text-lg font-semibold text-gray-900" id="modal-title">Cancel Order</h3>
+                                        <p class="mt-2 text-sm text-gray-500">
+                                            Are you sure you want to cancel order <span class="font-semibold text-gray-700">{{ $order->order_number }}</span>?
+                                        </p>
+                                        <div class="mt-4 p-4 bg-amber-50 rounded-xl border border-amber-200">
+                                            <div class="flex items-start gap-3">
+                                                <svg class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                                                </svg>
+                                                <div class="text-left">
+                                                    <p class="text-sm font-medium text-amber-800">This action cannot be undone</p>
+                                                    <p class="text-xs text-amber-700 mt-1">Your items will be returned to inventory and any pending payment will be cancelled.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Actions -->
+                                    <div class="bg-gray-50 px-6 py-4 flex gap-3 justify-end">
+                                        <button type="button"
+                                                @click="showCancelModal = false"
+                                                class="px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+                                            Keep Order
+                                        </button>
+                                        <form action="{{ route('order.cancel', $order->id) }}" method="POST" class="inline">
+                                            @csrf
+                                            @method('PUT')
+                                            <button type="submit"
+                                                    class="px-4 py-2.5 text-sm font-medium text-white bg-red-600 rounded-xl hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
+                                                Yes, Cancel Order
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     @endif
